@@ -1,4 +1,4 @@
-// Lista de ramos con prerrequisitos
+// Lista completa de ramos con requisitos (puedes expandirla tú también)
 const ramos = [
   // I Semestre
   { id: 'Enfermería Profesión y Disciplina', requisitos: [] },
@@ -75,52 +75,56 @@ const ramos = [
   { id: 'Gestión del Cuidado II', requisitos: ['Gestión del Cuidado I'] },
 ];
 
-// Guarda los ramos aprobados
+// Guardamos los ramos aprobados en un Set
 const aprobados = new Set();
 
-const contenedor = document.getElementById('malla');
+// Agarramos el div contenedor desde index.html
+const contenedor = document.getElementById("malla");
 
-// Crear elementos visuales
+// Crear cada ramo como div
 ramos.forEach(ramo => {
-  const div = document.createElement('div');
-  div.className = 'ramo bloqueado';
+  const div = document.createElement("div");
+  div.className = "ramo bloqueado";
   div.textContent = ramo.id;
   div.id = ramo.id;
-  div.onclick = () => aprobarRamo(ramo.id);
+  div.addEventListener("click", () => toggleAprobado(ramo.id));
   contenedor.appendChild(div);
 });
 
-function aprobarRamo(id) {
-  const ramo = ramos.find(r => r.id === id);
+// Función para cambiar el estado aprobado/no aprobado
+function toggleAprobado(id) {
   const div = document.getElementById(id);
+  if (div.classList.contains("bloqueado")) return;
 
-  if (!div.classList.contains('bloqueado')) {
-    div.classList.toggle('aprobado');
-    if (div.classList.contains('aprobado')) {
-      aprobados.add(id);
-    } else {
-      aprobados.delete(id);
-    }
-    actualizarEstado();
+  if (div.classList.contains("aprobado")) {
+    div.classList.remove("aprobado");
+    aprobados.delete(id);
+  } else {
+    div.classList.add("aprobado");
+    aprobados.add(id);
   }
+
+  actualizarRamos();
 }
 
-function actualizarEstado() {
+// Función que activa o bloquea ramos según requisitos
+function actualizarRamos() {
   ramos.forEach(ramo => {
     const div = document.getElementById(ramo.id);
+    const requisitosCumplidos = ramo.requisitos.every(req => aprobados.has(req));
+
     if (aprobados.has(ramo.id)) {
-      div.classList.remove('bloqueado');
-      div.classList.add('aprobado');
+      div.classList.remove("bloqueado");
+      div.classList.add("aprobado");
+    } else if (requisitosCumplidos) {
+      div.classList.remove("bloqueado");
+      div.classList.remove("aprobado");
     } else {
-      const requisitosCumplidos = ramo.requisitos.every(req => aprobados.has(req));
-      if (requisitosCumplidos) {
-        div.classList.remove('bloqueado');
-      } else {
-        div.classList.add('bloqueado');
-        div.classList.remove('aprobado');
-      }
+      div.classList.add("bloqueado");
+      div.classList.remove("aprobado");
     }
   });
 }
 
-actualizarEstado();
+// Ejecutar al cargar
+actualizarRamos();
